@@ -11,15 +11,77 @@
 ## [PROBLEM 1] - 150 points
 ## Below is code for one of the simplest possible Flask applications. Edit the code so that once you run this application locally and go to the URL 'http://localhost:5000/class', you see a page that says "Welcome to SI 364!"
 
-from flask import Flask
+from flask import Flask, request, render_template
+import requests
+import json
 app = Flask(__name__)
 app.debug = True
 
-@app.route('/')
+@app.route('/class')
 def hello_to_you():
-    return 'Hello!'
+    return '"Welcome to SI 364!"'
 
+@app.route('/movie/<movie_name>')
+def movie_stuff(movie_name):
+	baseurl = "https://itunes.apple.com/search?term="
+	baseurl = baseurl + movie_name
+	resp = requests.get(baseurl)
+	##import pdb;pdb.set_trace()
+	text = resp.text
+	python_obj = json.loads(text)
+	return text
+@app.route('/question', methods = ['GET'])
+def fav_num():
+	s = """<!DOCTYPE html>
+<html>
+<body>
+<form action='/display' method='POST'>
+  FAVORITE_NUMBER:<br>
+  <input type="int" name="number">
+  <br>
+  <input type="submit" value="Submit">
+  
+</form>
+</body>
+</html>"""
+	return s
 
+@app.route('/display', methods=['GET', 'POST'])
+def simpleFormData():
+    if request.method == 'POST':
+    	answer = int(request.form['number']) * 2
+    	return 'Double your favorite number is {}'.format(answer)
+@app.route('/problem4form', methods = ['POST', 'GET'])
+def problem4():
+	s = """<!DOCTYPE html>
+<html>
+<body>
+<form action='/problem4form' method='GET'>
+  Artist:<br>
+  <input type="text" name="artist">
+  <br>
+  <input type="submit" value="Submit">
+  HOW MANY SONGS:<br>
+  <input type="checkbox" name="one">
+  <label for="one">1</label>
+  <input type="checkbox" name="ten">
+  <label for="ten">10</label>
+  <br>
+</form>
+</body>
+</html>"""
+	if request.form['one'] == True:
+		amount = 1
+	else:
+		amount = 10
+	templateData = {
+	'Artist' : request.form['artist'],
+	'Amount' : amount
+	}
+	##s = s + templateData
+	return s
+	##else:
+	##return render_template('values.html',**templateData)
 if __name__ == '__main__':
     app.run()
 
